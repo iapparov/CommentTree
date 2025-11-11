@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS comments (
+    id UUID PRIMARY KEY, 
+    text TEXT NOT NULL, 
+    createdAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, 
+    ParentID UUID, 
+    status TEXT NOT NULL DEFAULT 'active'
+);

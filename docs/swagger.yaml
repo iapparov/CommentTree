@@ -1,0 +1,159 @@
+basePath: /
+definitions:
+  app.Comment:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      parent_id:
+        type: string
+      text:
+        type: string
+    type: object
+  app.CommentNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/app.CommentNode'
+        type: array
+      created_at:
+        type: string
+      id:
+        type: string
+      parent_id:
+        type: string
+      text:
+        type: string
+    type: object
+  web.CommentReqCreate:
+    properties:
+      parent_id:
+        type: string
+      text:
+        type: string
+    required:
+    - text
+    type: object
+  web.ErrorResponse:
+    properties:
+      error:
+        example: invalid input data
+        type: string
+    type: object
+info:
+  contact: {}
+  description: API для сервиса комментариев
+  title: commentTree API
+  version: "1.0"
+paths:
+  /comments:
+    get:
+      consumes:
+      - application/json
+      description: Получает комментарии по parentId, поддерживает фильтр search, пагинацию
+        и сортировку
+      parameters:
+      - description: Parent ID (если не указан, можно использовать search)
+        in: query
+        name: parent
+        type: string
+      - description: Текст для поиска комментариев
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Размер страницы
+        in: query
+        name: page_size
+        type: integer
+      - default: asc
+        description: Сортировка asc/desc
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список комментариев с деревом вложенности
+          schema:
+            items:
+              $ref: '#/definitions/app.CommentNode'
+            type: array
+        "400":
+          description: Invalid parent id
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "503":
+          description: Service unavailable (DB error)
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Get Comments
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Создает новый комментарий, можно указать ParentId для вложенного
+        комментария
+      parameters:
+      - description: Comment to create
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/web.CommentReqCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created comment
+          schema:
+            $ref: '#/definitions/app.Comment'
+        "400":
+          description: Invalid input data
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "503":
+          description: Service unavailable (DB error)
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Create Comment
+      tags:
+      - comments
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет комментарий и все его дочерние комментарии по ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Comment deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid comment ID
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+        "503":
+          description: Service unavailable (DB error)
+          schema:
+            $ref: '#/definitions/web.ErrorResponse'
+      summary: Delete Comment
+      tags:
+      - comments
+swagger: "2.0"
