@@ -79,7 +79,7 @@ func (s *CommentService) SearchComments(text string, parentId string, sortAsc st
 		if err != nil {
 			return nil, err
 		}
-		nodes = app.BuildTree(comments, nil)
+		nodes = app.BuildTree(comments, comments[0].ParentID)
 	} else {
 		tree, err := s.GetComments(parentId, sortAsc, page, pageSize)
 		if err != nil {
